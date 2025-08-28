@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Teste</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Teste Frontend com Render</h1>
+  <div id="message"></div>
+
+  <script>
+
+    console.log("Hello")
+
+    async function fetchHello() {
+      try {
+        //const res = await fetch("http://localhost:3000/"); // substitua pela URL do back-end
+        const res = await fetch("https://glowhub.onrender.com/"); // substitua pela URL do back-end
+        const text = await res.text();
+        document.getElementById("message").innerText = text;
+      } catch (err) {
+        console.error("Erro ao acessar back-end:", err);
+        document.getElementById("message").innerText = "Erro ao acessar back-end";
+      }
+    }
+
+    fetchHello();
+  </script>
+</body>
+</html>
