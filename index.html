@@ -7,25 +7,80 @@
 </head>
 <body>
   <h1>Teste Frontend com Render</h1>
-  <div id="message"></div>
+
+  <div>
+    <h2>Rota /</h2>
+    <div id="root-message">Carregando...</div>
+  </div>
+
+  <div>
+    <h2>Rota /get-out</h2>
+    <div id="out-message">Carregando...</div>
+  </div>
+
+  <div>
+    <h2>Rota /get-state</h2>
+    <div id="state-message">Carregando...</div>
+  </div>
+
+  <div>
+    <h2>Enviar comando para ESP_IN</h2>
+    <input type="text" id="cmd-input" placeholder="Digite o comando" />
+    <button id="send-btn">Enviar</button>
+    <div id="cmd-response"></div>
+  </div>
 
   <script>
+    //const BASE_URL = "https://glowhub.onrender.com"; // URL do seu backend no Render
+    const BASE_URL = "http://localhost:3000"; // URL do seu backend local
 
-    console.log("Hello")
-
-    async function fetchHello() {
+    async function fetchRoute(route, elementId, isJSON = false) {
       try {
-        //const res = await fetch("http://localhost:3000/"); // substitua pela URL do back-end
-        const res = await fetch("https://glowhub.onrender.com/"); // substitua pela URL do back-end
-        const text = await res.text();
-        document.getElementById("message").innerText = text;
+        const res = await fetch(`${BASE_URL}${route}`);
+        let text;
+        if (isJSON) {
+          const data = await res.json();
+          text = JSON.stringify(data);
+        } else {
+          text = await res.text();
+        }
+        document.getElementById(elementId).innerText = text;
       } catch (err) {
-        console.error("Erro ao acessar back-end:", err);
-        document.getElementById("message").innerText = "Erro ao acessar back-end";
+        console.error(`Erro ao acessar ${route}:`, err);
+        document.getElementById(elementId).innerText = `Erro ao acessar ${route}`;
       }
     }
 
-    fetchHello();
+    // chamar todas as rotas para atualizar os dados
+    fetchRoute("/", "root-message");
+    fetchRoute("/get-out", "out-message", true);
+    fetchRoute("/get-state", "state-message", true);
+
+    // enviar comando para ESP_IN
+    document.getElementById("send-btn").addEventListener("click", async () => {
+      const cmd = document.getElementById("cmd-input").value.trim();
+      if (!cmd) {
+        alert("Digite um comando!");
+        return;
+      }
+
+      try {
+        const res = await fetch(`${BASE_URL}/send-cmd`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ cmd })
+        });
+        const data = await res.json();
+        document.getElementById("cmd-response").innerText = data.success
+          ? `Comando enviado: ${data.sent}`
+          : `Erro: ${data.error}`;
+      } catch (err) {
+        console.error("Erro ao enviar comando:", err);
+        document.getElementById("cmd-response").innerText = "Erro ao enviar comando";
+      }
+
+      document.getElementById("cmd-input").value = ""; // limpa o input
+    });
   </script>
 </body>
 </html>
